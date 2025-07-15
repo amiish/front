@@ -37,7 +37,7 @@ const handleSubmit = async (e) => {
     return;
   }
 
-  if (!formData.guestname || !formData.gender || formData.phoneguest) {
+  if (!formData.guestname || !formData.gender || !formData.phoneguest) {
     alert("Please fill in all fields.");
     return;
   }
