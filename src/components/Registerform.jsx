@@ -3,36 +3,60 @@ import { useEffect } from "react";
 import axios from 'axios'
 
 export default function RegisterForm() {
-  const [name, setName] = useState("");
-  const [gender, setGender] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
   const [registrations, setRegistrations] = useState([]);
-
-  useEffect(()=>{
-    const fechguest = async()=>{
-      const data = await axios.get("https://form-production-93e5.up.railway.app/api/guest/All") ;
-      console.log(data.data.guest)
-    }
-    fechguest();
+  const [formData , setFormData] = useState({
+   guestname : "",
+   phoneguest : "",
+   gender :""
   })
 
-  const handleSubmit = async (element) => {
-    element.preventDefault();
-    if (registrations.length >= 20) {
-      alert("Sorry, the registration is full. Please stay updated for future events.");
-      return;
-    } else {
-      alert("Please fill in all fields.");
+
+  const handleChange = (e)=>{
+     setFormData({...formData, [e.target.name]: e.target.value})
+  }
+
+ useEffect(() => {
+  const fetchGuest = async () => {
+    try {
+      const data = await axios.get("https://form-production-93e5.up.railway.app/api/guest/All");
+      console.log(data.data.guest);
+      setRegistrations(data.data.guest); // optional
+    } catch (error) {
+      console.error("Error fetching guests:", error);
     }
-  
-      // Registration 
-      setRegistrations([...registrations, { name, gender, phoneNumber }]);
-      setName("");
-      setGender("");
-      setPhoneNumber("");
-      alert("You have successfully registered!");
-   
-}
+  };
+
+  fetchGuest();
+}, []);
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (registrations.length >= 20) {
+    alert("Sorry, the registration is full. Please stay updated for future events.");
+    return;
+  }
+
+  if (!formData.guestname || !formData.gender || formData.phoneguest) {
+    alert("Please fill in all fields.");
+    return;
+  }
+
+  try {
+    const res = await axios.post(
+      "https://form-production-93e5.up.railway.app/api/guest/new",
+      formData
+    );
+
+    alert("Guest successfully registered!");
+    setRegistrations([...registrations, res.data.guest]); // update list
+    setFormData({ guestname: "", gender: "" , phoneguest: "" }); // reset form
+  } catch (error) {
+    console.error("Error posting new guest:", error);
+    alert("Error submitting the form.");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-100 to-white flex flex-col items-center justify-start pt-12 px-4">
@@ -52,8 +76,9 @@ export default function RegisterForm() {
           <input
             type="text"
             className="w-full border border-blue-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={name}
-            onChange={(element) => setName(element.target.value)}
+            value={formData.guestname}
+            name="guestname"
+            onChange={handleChange}
             placeholder="Enter your full name"
             required
           />
@@ -63,8 +88,9 @@ export default function RegisterForm() {
           <label className="block text-gray-700 mb-2 font-medium">Gender</label>
           <select
             className="w-full border border-blue-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={gender}
-            onChange={(element) => setGender(element.target.value)}
+            value={formData.gender}
+            name="gender"
+            onChange={handleChange}
             required
           >
             <option value="" disabled hidden>Select Gender</option>
@@ -78,8 +104,9 @@ export default function RegisterForm() {
           <input
             type="text"
             className="w-full border border-blue-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={phoneNumber}
-            onChange={(element) => setPhoneNumber(element.target.value)}
+            value={formData.phoneguest}
+            name="phoneguest"
+            onChange={handleChange}
             placeholder="Enter your phone number"
             maxLength={9}
             required
