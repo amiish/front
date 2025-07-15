@@ -10,7 +10,7 @@ export default function RegisterForm() {
 
   useEffect(()=>{
     const fechguest = async()=>{
-      const data = await axios.get("http://localhost:2000/api/guest/All") ;
+      const data = await axios.get("https://form-production-93e5.up.railway.app/api/guest/All") ;
       console.log(data.data.guest)
     }
     fechguest();
